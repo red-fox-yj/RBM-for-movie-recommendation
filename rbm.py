@@ -8,13 +8,12 @@ class RBM:
         self.num_visible = num_visible
         self.debug_print = True
 
-        # Initialize a weight matrix, of dimensions (num_visible x num_hidden), using
-        # a uniform distribution between -sqrt(6. / (num_hidden + num_visible))
-        # and sqrt(6. / (num_hidden + num_visible)). One could vary the
-        # standard deviation by multiplying the interval with appropriate value.
-        # Here we initialize the weights with mean 0 and standard deviation 0.1.
-        # Reference: Understanding the difficulty of training deep feedforward
-        # neural networks by Xavier Glorot and Yoshua Bengio
+        # 初始化一个权值矩阵，维数(num_visible , num_hidden)，使用
+        # 在-sqrt(6。/ (num_hidden + num_visible))
+        # 和sqrt(6。/ (num_hidden + num_visible))。可以改变
+        # 用适当的值乘以区间的标准差。
+        # 这里我们初始化权值，均值为0，标准差为0.1。
+        # Reference:理解训练深度前馈的困难
         np_rng = np.random.RandomState(1234)
 
         self.weights = np.asarray(
@@ -25,7 +24,7 @@ class RBM:
             )
         )
 
-        # Insert weights for the bias units into the first row and first column.
+        # 将偏置单位的权重插入第一行和第一列.
         self.weights = np.insert(self.weights, 0, 0, axis=0)
         self.weights = np.insert(self.weights, 0, 0, axis=1)
 
@@ -35,17 +34,17 @@ class RBM:
 
         Parameters
         ----------
-        data: A matrix where each row is a training example consisting of the states of visible units.
+        data: 一个矩阵，其中每一行都是由可见单位的状态组成的训练示例.
         """
 
         num_examples = data.shape[0]
 
-        # Insert bias units of 1 into the first column.
+        # 将偏置单位1插入第一列.
         data = np.insert(data, 0, 1, axis=1)
 
         for epoch in range(max_epochs):
-            # Clamp to the data and sample from the hidden units.
-            # (This is the "positive CD phase", aka the reality phase.)
+            # 夹住隐藏单位的数据和样本.
+            # (这是“正CD阶段”，也就是现实阶段)
             pos_hidden_activations = np.dot(data, self.weights)
             pos_hidden_probs = self._logistic(pos_hidden_activations)
             pos_hidden_probs[:, 0] = 1  # Fix the bias unit.
@@ -57,8 +56,8 @@ class RBM:
             # "A Practical Guide to Training Restricted Boltzmann Machines" for more.
             pos_associations = np.dot(data.T, pos_hidden_probs)
 
-            # Reconstruct the visible units and sample again from the hidden units.
-            # (This is the "negative CD phase", aka the daydreaming phase.)
+            # 重建可见单位，并从隐藏单位再次采样.
+            # (这是“消极CD阶段”，又名白日梦阶段.)
             neg_visible_activations = np.dot(pos_hidden_states, self.weights.T)
             neg_visible_probs = self._logistic(neg_visible_activations)
             neg_visible_probs[:, 0] = 1  # Fix the bias unit.
@@ -158,10 +157,10 @@ class RBM:
 
     def daydream(self, num_samples):
         """
-        Randomly initialize the visible units once, and start running alternating Gibbs sampling steps
-        (where each step consists of updating all the hidden units, and then updating all of the visible units),
-        taking a sample of the visible units at each step.
-        Note that we only initialize the network *once*, so these samples are correlated.
+        随机初始化可见单位一次，并开始运行交替吉布斯采样步骤
+        (每一步都包含更新所有隐藏单元，然后更新所有可见单元)，
+        在每个步骤中抽取可见单元的样本。
+        注意，我们只初始化网络*一次*，所以这些样本是相关的。
 
         Returns
         -------
