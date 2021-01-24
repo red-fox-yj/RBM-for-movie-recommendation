@@ -9,10 +9,9 @@ class RBM:
         self.debug_print = True
 
         # 初始化一个权值矩阵，维数(num_visible , num_hidden)，使用
-        # 在-sqrt(6。/ (num_hidden + num_visible))
-        # 和sqrt(6。/ (num_hidden + num_visible))。可以改变
-        # 用适当的值乘以区间的标准差。
-        # 这里我们初始化权值，均值为0，标准差为0.1。
+        # 一个在-sqrt(6./ (num_hidden + num_visible))和sqrt(6./ (num_hidden + num_visible))之间
+        # 的均匀分布。我们可以用适当的值乘以区间来改变标准差。
+        # 在这里，我们用均值0和标准差0.1初始化权重。
         # Reference:理解训练深度前馈的困难
         np_rng = np.random.RandomState(1234)
 
@@ -38,16 +37,21 @@ class RBM:
         """
 
         num_examples = data.shape[0]
+        print(num_examples)
 
         # 将偏置单位1插入第一列.
         data = np.insert(data, 0, 1, axis=1)
 
         for epoch in range(max_epochs):
-            # 夹住隐藏单位的数据和样本.
-            # (这是“正CD阶段”，也就是现实阶段)
+            # 固定到隐藏单元中的数据和样本。
+            # （这是“正CD阶段”，又称现实阶段）
+            # 计算可见单元到隐藏单元的激活能量
             pos_hidden_activations = np.dot(data, self.weights)
+            # 计算可见单元到隐藏单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
             pos_hidden_probs = self._logistic(pos_hidden_activations)
-            pos_hidden_probs[:, 0] = 1  # Fix the bias unit.
+            # 修复偏执单元
+            pos_hidden_probs[:, 0] = 1
+
             pos_hidden_states = pos_hidden_probs > np.random.rand(
                 num_examples, self.num_hidden + 1
             )
@@ -56,12 +60,17 @@ class RBM:
             # "A Practical Guide to Training Restricted Boltzmann Machines" for more.
             pos_associations = np.dot(data.T, pos_hidden_probs)
 
-            # 重建可见单位，并从隐藏单位再次采样.
-            # (这是“消极CD阶段”，又名白日梦阶段.)
+            # 重建可见单位，并从隐藏单位再次采样。
+            # (这是“消极CD阶段”，又名白日梦阶段)
+            # 计算隐藏单元到可见单元的激活能量
             neg_visible_activations = np.dot(pos_hidden_states, self.weights.T)
+            # 计算隐藏单元到可见单元的激活概率（已知隐藏单元情况下可见单元的概率分布）
             neg_visible_probs = self._logistic(neg_visible_activations)
-            neg_visible_probs[:, 0] = 1  # Fix the bias unit.
+            # 修复偏置单元
+            neg_visible_probs[:, 0] = 1
+            # 计算可见单元到隐藏单元的激活能量
             neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
+            # 计算可见单元到隐藏单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
             neg_hidden_probs = self._logistic(neg_hidden_activations)
             # Note, again, that we're using the activation *probabilities* when computing associations, not the states
             # themselves.
@@ -202,6 +211,7 @@ class RBM:
         return samples[:, 1:]
 
     def _logistic(self, x):
+        """激活函数"""
         return 1.0 / (1 + np.exp(-x))
 
 
