@@ -234,6 +234,8 @@ if __name__ == "__main__":
     print(r.weights)
     user = np.array([[0, 0, 0, 1, 1, 0]])
     user_hidden = np.array([[1, 0]])
+    # 根据输入的电影刻画人物偏好模型
     print(r.run_visible(user))
+    # 根据人物偏好模型推荐电影
     for i in range(8):
         print(r.run_hidden(user_hidden))
