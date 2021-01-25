@@ -45,38 +45,41 @@ class RBM:
         for epoch in range(max_epochs):
             # 固定到隐藏单元中的数据和样本。
             # （这是“正CD阶段”，又称现实阶段）
-            # 计算可见单元到隐藏单元的激活能量
+            # 计算隐藏单元关于可见单元的激活能量
             pos_hidden_activations = np.dot(data, self.weights)
-            # 计算可见单元到隐藏单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
+            # 计算隐藏单元关于可见单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
             pos_hidden_probs = self._logistic(pos_hidden_activations)
-            # 修复偏执单元
+            # 修复偏置单元
             pos_hidden_probs[:, 0] = 1
-
+            # 根据激活概率从均匀分布中采样
             pos_hidden_states = pos_hidden_probs > np.random.rand(
                 num_examples, self.num_hidden + 1
             )
             # Note that we're using the activation *probabilities* of the hidden states, not the hidden states
             # themselves, when computing associations. We could also use the states; see section 3 of Hinton's
             # "A Practical Guide to Training Restricted Boltzmann Machines" for more.
+            # 对比散度更新权重规则
             pos_associations = np.dot(data.T, pos_hidden_probs)
 
             # 重建可见单位，并从隐藏单位再次采样。
             # (这是“消极CD阶段”，又名白日梦阶段)
-            # 计算隐藏单元到可见单元的激活能量
+            # 计算可见单元关于隐藏单元的激活能量
             neg_visible_activations = np.dot(pos_hidden_states, self.weights.T)
-            # 计算隐藏单元到可见单元的激活概率（已知隐藏单元情况下可见单元的概率分布）
+            # 计算可见单元关于隐藏单元的激活概率（已知隐藏单元情况下可见单元的概率分布）
             neg_visible_probs = self._logistic(neg_visible_activations)
             # 修复偏置单元
             neg_visible_probs[:, 0] = 1
-            # 计算可见单元到隐藏单元的激活能量
+            # 计算隐藏单元关于可见单元的激活能量
             neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
-            # 计算可见单元到隐藏单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
+            # 计算隐藏单元关于可见单元的激活概率（已知可见单元情况下隐藏单元的概率分布）
             neg_hidden_probs = self._logistic(neg_hidden_activations)
+
             # Note, again, that we're using the activation *probabilities* when computing associations, not the states
             # themselves.
+            # 对比散度更新权重规则
             neg_associations = np.dot(neg_visible_probs.T, neg_hidden_probs)
 
-            # Update weights.
+            # 对比散度更新权重规则
             self.weights += learning_rate * (
                 (pos_associations - neg_associations) / num_examples
             )
@@ -230,4 +233,7 @@ if __name__ == "__main__":
     r.train(training_data, max_epochs=5000)
     print(r.weights)
     user = np.array([[0, 0, 0, 1, 1, 0]])
+    user_hidden = np.array([[1, 0]])
     print(r.run_visible(user))
+    for i in range(8):
+        print(r.run_hidden(user_hidden))
