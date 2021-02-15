@@ -4,7 +4,7 @@
 
 ​		受限波尔兹曼机(Restricted Boltzmann Machines，RBM)是一类具有两层结构、对称连接且无自反馈的随机神经网络模型，**层间全连接，层内无连接**。如下图所示。$v$为**可见层**，用于表示观测数据，$h$为**隐层**，可视为一些特征提取器，$W$为两层之间的**连接权重**。这里，为了讨论方便起见，我们假设所有的可见单元和隐单元均为二值变量，即$\forall i,j \Rightarrow v_i \in \lbrace 0,1 \rbrace,h_i \in \lbrace 0,1 \rbrace$。
 
-![20181120115904193](C:\Users\ASUS\Desktop\Learning_notes\深度学习\images\20181120115904193.png)
+![20181120115904193](https://raw.githubusercontent.com/red-fox-yj/MarkDownPic/master/typora/20210215095339.png)
 
 ​		如果一个RBM有$n$个可见单元和$m$个隐单元，用向量$v$和$h$分别表示可见单元和隐单元的状态，如上图所示，其中，$v_i$表示第$i$个可见单元的状态，$h_j$表示第$j$个隐单元的状态。那么，对于一组给定的状态$(v,h)$，RBM作为一个系统所具备的能量定为：
 $$
@@ -97,6 +97,6 @@ $$
 $$
 通过上面我们知道了学习函数，以及学习函数的难点在哪里，我们知道学习函数的难点在求均值时归一化因子$Z(\theta)$的计算量很大即整个模型的期望，计算量是$2^{m+n}$,无法求解，但是我们引入了$Gibbs$采样解决这个问题，即我通过采样去逼近这个均值，因为分布函数我们知道。只是计算量很大，因此使用统计的方法进行处理可以很好的解决问题，但是问题是计算$Gibbs$采样的计算量还是很大，如下图，需要迭代很多次才能达到热平衡状态，效率还是很低，这时候的问题是$\left \langle \bullet \right \rangle_{model}$通过$Gibbs$采样还是很大  怎么办呢？所以引入快速学习算法。
 
-![20181120115904193](C:\Users\ASUS\Desktop\Learning_notes\深度学习\images\20181120115904193.png)
+![Gibbs](https://raw.githubusercontent.com/red-fox-yj/MarkDownPic/master/typora/20210215095328.png)
 
 ## 基于对比散度的快速学习算法
